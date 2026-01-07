@@ -13,7 +13,7 @@ html, body {
     height: 100%;
     background: black;
     overflow: hidden;
-    font-family: monospace;
+    font-family: "ULTRAKILL", monospace;
 }
 
 /* MATRIX BACKGROUND */
@@ -67,7 +67,11 @@ html, body {
 
 /* TEXT */
 #text {
-    font-size: 1.4rem;
+    letter-spacing: 0.05em;
+    text-shadow:
+        0 0 2px rgba(255,255,255,0.15),
+        0 0 6px rgba(0,0,0,0.8);
+    font-size: 1.6rem;
     max-width: 900px;
     line-height: 1.6;
     white-space: pre-wrap;
@@ -92,6 +96,13 @@ html, body {
 }
 </style>
 </head>
+
+@font-face {
+    font-family: "Ultrakill";
+    src: url("ULTRAKILL.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
 
 <body class="vhs">
 
