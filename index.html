@@ -6,6 +6,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+<style>
+@font-face {
+    font-family: "ULTRAKILL";
+    src: url("ULTRAKILL.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
 html, body {
     margin: 0;
     padding: 0;
@@ -14,6 +22,8 @@ html, body {
     background: black;
     overflow: hidden;
     font-family: "ULTRAKILL", monospace;
+}
+
 }
 
 /* MATRIX BACKGROUND */
@@ -138,7 +148,7 @@ function drawMatrix() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = matrixPulse ? "#66ff99" : "#00aa55";
-    ctx.font = `${fontSize}px monospace`;
+    ctx.font = `${fontSize}px ULTRAKILL`;
 
     for (let i = 0; i < drops.length; i++) {
         const char = chars[Math.floor(Math.random() * chars.length)];
