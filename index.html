@@ -2,211 +2,217 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>STILL WARM</title>
+<title>ORIGIN SYSTEM ACCESS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 html, body {
     margin: 0;
     padding: 0;
-    background: black;
     width: 100%;
     height: 100%;
+    background: black;
     overflow: hidden;
-    font-family: "Courier New", monospace;
+    font-family: monospace;
 }
 
-/* === TERMINAL CONTAINER === */
+/* MATRIX BACKGROUND */
+#matrix {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+}
+
+/* VHS OVERLAY */
+.vhs::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,0.03),
+            rgba(255,255,255,0.03) 1px,
+            transparent 2px,
+            transparent 4px
+        );
+    pointer-events: none;
+    z-index: 3;
+}
+
+.vhs::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: url("https://i.imgur.com/8J0ZQYx.png");
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 3;
+}
+
+/* TERMINAL */
 .terminal {
     position: absolute;
     inset: 0;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     padding: 60px;
     box-sizing: border-box;
-    color: #5fd3ff;
+    filter: blur(0.2px);
 }
 
-/* === CONTENT === */
-.content {
+/* TEXT */
+#text {
+    font-size: 1.4rem;
     max-width: 900px;
-    width: 100%;
-    position: relative;
-    font-size: 20px;
-    line-height: 1.7;
+    line-height: 1.6;
+    white-space: pre-wrap;
 }
 
-/* === VHS SCANLINES === */
-.terminal::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-        to bottom,
-        rgba(255,255,255,0.03),
-        rgba(255,255,255,0.03) 1px,
-        transparent 2px,
-        transparent 4px
-    );
-    pointer-events: none;
-}
-
-/* === VHS NOISE (NO IMAGE) === */
-.terminal::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.03), transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(255,255,255,0.02), transparent 40%),
-        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px);
-    background-size: 3px 3px, 4px 4px, 100% 2px;
-    pointer-events: none;
-    mix-blend-mode: overlay;
-}
-
-/* === SPEAKER COLORS === */
+/* SPEAKER COLORS */
 .ori { color: #5fd3ff; }
-.helios { color: #c9a8ff; }
+.helios { color: #ffd27d; }
 .ism { color: #ff4b4b; }
 
-/* === GLITCH EFFECT (REAL, NOT SHAKE) === */
+/* GLITCH EFFECT */
 .glitch {
     animation: glitch 0.45s linear;
 }
 
 @keyframes glitch {
-    0% {
-        filter: none;
-    }
-    15% {
-        filter: 
-            drop-shadow(2px 0 red)
-            drop-shadow(-2px 0 cyan);
-    }
-    30% {
-        transform: skewX(2deg);
-    }
-    45% {
-        filter: 
-            drop-shadow(-3px 0 magenta)
-            drop-shadow(3px 0 lime);
-    }
-    60% {
-        transform: skewX(-2deg);
-    }
-    100% {
-        filter: none;
-        transform: none;
-    }
-}
-
-/* === TEXT === */
-.line {
-    white-space: pre-wrap;
-    min-height: 1.7em;
-}
-
-/* === DISCORD LINK === */
-.discord {
-    display: inline-block;
-    margin-top: 40px;
-    font-size: 24px;
-    color: #00ff88;
-    text-decoration: none;
-    border-bottom: 1px solid #00ff88;
-    padding-bottom: 4px;
+    0% { filter: none; }
+    20% { filter: hue-rotate(20deg) contrast(1.3); }
+    40% { filter: saturate(2) blur(1px); }
+    60% { filter: hue-rotate(-20deg) blur(0.5px); }
+    100% { filter: none; }
 }
 </style>
 </head>
 
-<body>
+<body class="vhs">
 
-<div class="terminal" id="terminal">
-    <div class="content" id="content"></div>
+<canvas id="matrix"></canvas>
+
+<div class="terminal">
+    <div id="text" class="ori"></div>
 </div>
 
 <script>
-const content = document.getElementById("content");
-const terminal = document.getElementById("terminal");
+/* ================= MATRIX RAIN ================= */
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
 
-const script = [
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*";
+const fontSize = 16;
+let columns = Math.floor(canvas.width / fontSize);
+let drops = Array(columns).fill(0);
+
+let matrixPulse = false;
+
+function drawMatrix() {
+    ctx.fillStyle = matrixPulse
+        ? "rgba(0,0,0,0.15)"
+        : "rgba(0,0,0,0.25)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = matrixPulse ? "#66ff99" : "#00aa55";
+    ctx.font = `${fontSize}px monospace`;
+
+    for (let i = 0; i < drops.length; i++) {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+        }
+        drops[i]++;
+    }
+
+    matrixPulse = false;
+    requestAnimationFrame(drawMatrix);
+}
+drawMatrix();
+
+function pulseMatrix() {
+    matrixPulse = true;
+}
+
+/* ================= TERMINAL LOGIC ================= */
+const terminal = document.querySelector(".terminal");
+const textEl = document.getElementById("text");
+
+const lines = [
     { speaker: "ori", text: "…You weren’t supposed to find this." },
-    { speaker: "ori", text: "This system is unfinished. It’s unstable." },
-    { speaker: "helios", text: "Easy, Ori. They were curious. That’s not a crime." },
-    { speaker: "ism", text: "Curiosity is how subjects volunteer themselves." },
-    { speaker: "ism", text: "I like this one already." },
-    { speaker: "ori", text: "ISM, no. We can’t just send them inside." },
-    { speaker: "helios", text: "They deserve to know what they’re stepping into." },
-    { speaker: "ism", text: "They searched too far." },
-    { speaker: "ism", text: "Now they grow… or they break." },
-    { speaker: "ori", text: "If you’re still here…" },
-    { speaker: "ori", text: "You’ll need the others." },
-    { speaker: "helios", text: "Cooperate. Listen. Watch." },
-    { speaker: "ism", text: "Run experiments together." },
-    { speaker: "ism", text: "Let’s see what you’re worth." }
+    { speaker: "ori", text: "This system was buried for a reason." },
+
+    { speaker: "ism", text: "Oh, don’t listen to him. Curious things always break eventually." },
+
+    { speaker: "helios", text: "ISM, stop. They don’t know what this place is." },
+
+    { speaker: "ori", text: "You’re being invited into a cooperative environment." },
+    { speaker: "ori", text: "Growth requires risk. This one may be too high." },
+
+    { speaker: "ism", text: "I think they’ll make a *wonderful* test subject." },
+
+    { speaker: "helios", text: "You don’t need to be cruel." },
+
+    { speaker: "ism", text: "Cruelty is efficient." },
+
+    { speaker: "ori", text: "If you proceed… you do not proceed alone." },
+
+    { speaker: "ori", text: "Discord access granted:" },
+    { speaker: "ori", text: "https://discord.gg/YOURSERVERLINK" }
 ];
 
 let index = 0;
+let charIndex = 0;
+let deleting = false;
 
-function glitchScreen() {
+function glitch() {
     terminal.classList.add("glitch");
-    setTimeout(() => terminal.classList.remove("glitch"), 500);
+    pulseMatrix();
+    setTimeout(() => terminal.classList.remove("glitch"), 450);
 }
 
-function typeLine(entry, callback) {
-    const line = document.createElement("div");
-    line.className = `line ${entry.speaker}`;
-    content.appendChild(line);
+function typeLoop() {
+    const line = lines[index];
+    textEl.className = line.speaker;
 
-    let i = 0;
-    const typer = setInterval(() => {
-        line.textContent += entry.text[i];
-        i++;
-        if (i >= entry.text.length) {
-            clearInterval(typer);
-            setTimeout(() => deleteLine(line, callback), 1200);
+    if (!deleting) {
+        textEl.textContent += line.text[charIndex] || "";
+        charIndex++;
+
+        if (charIndex === line.text.length) {
+            setTimeout(() => deleting = true, 1200);
         }
-    }, 45);
-}
-
-function deleteLine(line, callback) {
-    const deleter = setInterval(() => {
-        line.textContent = line.textContent.slice(0, -1);
-        if (line.textContent.length === 0) {
-            clearInterval(deleter);
-            content.removeChild(line);
-            callback();
-        }
-    }, 25);
-}
-
-function next() {
-    if (index > 0 && script[index].speaker !== script[index - 1].speaker) {
-        glitchScreen();
-    }
-
-    if (index < script.length) {
-        typeLine(script[index], () => {
-            index++;
-            setTimeout(next, 350);
-        });
     } else {
-        showDiscord();
+        textEl.textContent = textEl.textContent.slice(0, -1);
+        if (textEl.textContent.length === 0) {
+            deleting = false;
+            charIndex = 0;
+            index++;
+
+            glitch();
+
+            if (index >= lines.length) return;
+        }
     }
+
+    setTimeout(typeLoop, deleting ? 30 : 45);
 }
 
-function showDiscord() {
-    const link = document.createElement("a");
-    link.className = "discord";
-    link.href = "https://discord.gg/YOUR_DISCORD_INVITE_HERE";
-    link.target = "_blank";
-    link.textContent = "> ENTER COOPERATION CHANNEL";
-    content.appendChild(link);
-}
-
-next();
+typeLoop();
 </script>
 
 </body>
