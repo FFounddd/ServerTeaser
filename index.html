@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>STILL WARM</title>
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: black;
+        color: #00ffcc;
+        font-family: "Courier New", monospace;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .terminal {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        padding: 40px;
+        box-sizing: border-box;
+        font-size: 18px;
+        line-height: 1.6;
+        filter: blur(0.3px);
+    }
+
+    /* VHS Scanlines */
+    .terminal::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+            to bottom,
+            rgba(255,255,255,0.02),
+            rgba(255,255,255,0.02) 1px,
+            transparent 2px,
+            transparent 4px
+        );
+        pointer-events: none;
+        mix-blend-mode: overlay;
+    }
+
+    /* VHS Noise */
+    .terminal::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("https://i.imgur.com/8pQeZ0F.png");
+        opacity: 0.07;
+        pointer-events: none;
+    }
+
+    .line {
+        white-space: pre-wrap;
+    }
+
+    .ori { color: #5fd3ff; }
+    .helios { color: #c9a8ff; }
+    .ism { color: #ff4b4b; }
+
+    /* Screen Warp */
+    @keyframes warp {
+        0% { transform: scale(1) skew(0deg); }
+        50% { transform: scale(1.01) skew(0.2deg); }
+        100% { transform: scale(1) skew(0deg); }
+    }
+
+    .terminal {
+        animation: warp 6s infinite ease-in-out;
+    }
+
+    /* Glitch Effect */
+    .glitch {
+        animation: glitch 0.3s steps(2) infinite;
+    }
+
+    @keyframes glitch {
+        0% { transform: translate(0); }
+        20% { transform: translate(-5px, 3px); }
+        40% { transform: translate(5px, -3px); }
+        60% { transform: translate(-3px, -2px); }
+        80% { transform: translate(3px, 2px); }
+        100% { transform: translate(0); }
+    }
+
+    .discord {
+        margin-top: 40px;
+        font-size: 22px;
+        color: #00ff88;
+        text-decoration: none;
+    }
+</style>
+</head>
+<body>
+
+<div class="terminal" id="terminal"></div>
+
+<script>
+const terminal = document.getElementById("terminal");
+
+const script = [
+    { speaker: "ori", text: "…You weren’t supposed to find this." },
+    { speaker: "ori", text: "This system is unfinished. It’s unstable." },
+    { speaker: "helios", text: "Easy, Ori. They were curious. That’s not a crime." },
+    { speaker: "ism", text: "Curiosity is how subjects volunteer themselves." },
+    { speaker: "ism", text: "I like this one already." },
+    { speaker: "ori", text: "ISM, no. We can’t just send them inside." },
+    { speaker: "helios", text: "They deserve to know what they’re stepping into." },
+    { speaker: "ism", text: "They searched too far." },
+    { speaker: "ism", text: "Now they grow… or they break." },
+    { speaker: "ori", text: "If you’re still here…" },
+    { speaker: "ori", text: "You’ll need the others." },
+    { speaker: "helios", text: "Cooperate. Listen. Watch." },
+    { speaker: "ism", text: "Run experiments together." },
+    { speaker: "ism", text: "Let’s see what you’re worth." },
+];
+
+let lineIndex = 0;
+
+function glitchScreen() {
+    terminal.classList.add("glitch");
+    setTimeout(() => terminal.classList.remove("glitch"), 400);
+}
+
+function typeLine(entry, callback) {
+    const div = document.createElement("div");
+    div.className = `line ${entry.speaker}`;
+    terminal.appendChild(div);
+
+    let i = 0;
+    const typing = setInterval(() => {
+        div.textContent += entry.text[i];
+        i++;
+        if (i >= entry.text.length) {
+            clearInterval(typing);
+            setTimeout(() => deleteLine(div, callback), 1200);
+        }
+    }, 40);
+}
+
+function deleteLine(div, callback) {
+    const deleting = setInterval(() => {
+        div.textContent = div.textContent.slice(0, -1);
+        if (div.textContent.length === 0) {
+            clearInterval(deleting);
+            terminal.removeChild(div);
+            callback();
+        }
+    }, 25);
+}
+
+function nextLine() {
+    if (lineIndex === 0 || script[lineIndex].speaker !== script[lineIndex - 1].speaker) {
+        glitchScreen();
+    }
+
+    if (lineIndex < script.length) {
+        typeLine(script[lineIndex], () => {
+            lineIndex++;
+            setTimeout(nextLine, 300);
+        });
+    } else {
+        showDiscord();
+    }
+}
+
+function showDiscord() {
+    const link = document.createElement("a");
+    link.href = "https://discord.gg/YOUR_DISCORD_INVITE_HERE";
+    link.target = "_blank";
+    link.className = "discord";
+    link.textContent = "> ENTER COOPERATION CHANNEL";
+    terminal.appendChild(link);
+}
+
+nextLine();
+</script>
+
+</body>
+</html>
